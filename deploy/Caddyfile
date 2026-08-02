@@ -1,0 +1,46 @@
+# Caddy configuration for the Sentinel-2 Explorer.
+#
+# Caddy terminates TLS and reverse proxies to the app container, obtaining and renewing the
+# certificate from Let's Encrypt automatically.
+
+{
+	# Port 80 on this host is already owned by another container (rapida_backend_nginx_1), so Caddy
+	# must not try to bind it for the usual HTTP -> HTTPS redirect. Without this line Caddy fails to
+	# start with an "address already in use" error.
+	#
+	# The consequence is that plain http://<host> reaches whatever is on port 80 rather than
+	# redirecting here, so only ever advertise the https:// URL.
+	auto_https disable_redirects
+
+	# No ACME contact email is set, because this file lives in a public repository and an address
+	# here would be published. Caddy renews automatically, so the only thing given up is Let's
+	# Encrypt's expiry warning email. To opt in, add `email you@example.com` on its own line here --
+	# but do not commit it.
+}
+
+# sslip.io is a public wildcard DNS service: <ip>.sslip.io resolves to <ip>. It gives this server a
+# real, publicly resolvable hostname without registering a domain, which is what Let's Encrypt needs
+# in order to issue a certificate. Certificates cannot be issued for a bare IP address.
+#
+# Swap this for a proper domain when you have one: point an A record at the server, change the line
+# below, and add the new https:// origin as a Redirect URI on the ArcGIS application.
+5.189.150.44.sslip.io {
+	tls {
+		issuer acme {
+			# The HTTP-01 challenge needs port 80, which is unavailable on this host. TLS-ALPN-01
+			# runs entirely over port 443, which is free, so it is the only workable option here.
+			disable_http_challenge
+		}
+	}
+
+	# `sentinel2explorer` is the service name from docker-compose.yml, resolved over the shared
+	# Docker network. No host port is involved.
+	reverse_proxy sentinel2explorer:80
+
+	encode gzip
+
+	log {
+		output stdout
+		format console
+	}
+}

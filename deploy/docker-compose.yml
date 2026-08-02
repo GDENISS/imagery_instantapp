@@ -28,16 +28,44 @@ services:
         container_name: sentinel2explorer
         restart: unless-stopped
         ports:
-            # Bound to localhost only: the container is not meant to be reachable from the internet
-            # directly, only through the reverse proxy that terminates TLS. Drop the 127.0.0.1 prefix
-            # only if you deliberately want it exposed.
+            # Bound to localhost only, purely so you can curl it on the server to check the container
+            # in isolation. Caddy reaches it over the shared Docker network, not through this port.
+            # Remove this block entirely if you do not want it listening at all.
             - '127.0.0.1:8090:80'
         networks:
             - web
 
+    # TLS terminator and public entry point.
+    #
+    # Remove this service if you would rather front the app with the Nginx container that already
+    # owns port 80 (Option A in deploy/README.md).
+    caddy:
+        image: caddy:alpine
+        container_name: sentinel2explorer-caddy
+        restart: unless-stopped
+        ports:
+            # Only 443. Port 80 belongs to rapida_backend_nginx_1 on this host.
+            - '443:443'
+            # TLS-ALPN-01 works over TCP, but Caddy also serves HTTP/3 over UDP 443 when available.
+            - '443:443/udp'
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile:ro
+            # Certificates live here. This MUST persist: without it Caddy re-requests a certificate
+            # on every restart and will eventually hit Let's Encrypt rate limits.
+            - caddy_data:/data
+            - caddy_config:/config
+        networks:
+            - web
+        depends_on:
+            - sentinel2explorer
+
 networks:
     web:
         # Set `external: true` and change the name to the network your edge proxy already uses if you
-        # intend to proxy to this container by name (http://sentinel2explorer:80) rather than by port.
-        # Find it with: docker network ls
+        # intend to proxy to this container from an existing stack rather than from the Caddy service
+        # above. Find it with: docker network ls
         driver: bridge
+
+volumes:
+    caddy_data:
+    caddy_config:

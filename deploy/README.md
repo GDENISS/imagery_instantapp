@@ -110,43 +110,34 @@ server {
 
 Trade-off: it means editing another project's running config. Take a backup first.
 
-### Option B — standalone on port 443 with Caddy
+### Option B — standalone on port 443 with Caddy (default, already wired up)
 
-Best if you would rather not touch the existing stack. Caddy can obtain a certificate over
-**TLS-ALPN-01**, which uses port 443 only and never needs port 80.
+Self-contained: it cannot break the revenue-system or geonode stacks, and changes nothing that is
+already running. Caddy obtains its certificate over **TLS-ALPN-01**, which uses port 443 only and
+never needs port 80.
 
-```yaml
-# add to deploy/docker-compose.yml
-caddy:
-    image: caddy:alpine
-    container_name: sentinel2explorer-caddy
-    restart: unless-stopped
-    ports:
-        - '443:443'
-    volumes:
-        - ./Caddyfile:/etc/caddy/Caddyfile:ro
-        - caddy_data:/data
-    networks:
-        - web
-    depends_on:
-        - sentinel2explorer
-```
+This is already configured — `deploy/docker-compose.yml` includes the `caddy` service and
+`deploy/Caddyfile` has the config. **Edit two placeholders in `deploy/Caddyfile` before starting:**
 
 ```caddyfile
-# deploy/Caddyfile
-s2.example.com {
-    reverse_proxy sentinel2explorer:80
-}
+email you@example.com     # your address, for Let's Encrypt expiry warnings
+s2.example.com { ... }    # your domain, which must already resolve to this server
 ```
 
-Add `volumes: { caddy_data: }` at the file's top level. Caddy renews automatically; `caddy_data` must
-persist or you will re-issue on every restart and hit rate limits.
+Two settings in there are doing load-bearing work on this particular host, so do not remove them:
 
-The catch: with port 80 owned by another service, plain `http://s2.example.com` will land on that
-other app rather than redirecting. Only advertise the `https://` URL.
+| Setting | Why |
+|---|---|
+| `auto_https disable_redirects` | Caddy otherwise tries to bind port 80 for the HTTP→HTTPS redirect and **fails to start**, because `rapida_backend_nginx_1` already has it |
+| `disable_http_challenge` | The HTTP-01 challenge needs port 80. TLS-ALPN-01 runs entirely over 443 |
 
-**Recommendation:** Option B. It is self-contained, cannot break the revenue-system or geonode stacks,
-and needs no changes to anything already running.
+The `caddy_data` volume holds the certificates and **must** persist — without it Caddy re-requests a
+certificate on every restart and will eventually hit Let's Encrypt rate limits.
+
+The catch: with port 80 owned by another service, plain `http://s2.example.com` lands on that other
+app rather than redirecting. Only advertise the `https://` URL.
+
+If you pick Option A instead, delete the `caddy` service from the compose file.
 
 ---
 
