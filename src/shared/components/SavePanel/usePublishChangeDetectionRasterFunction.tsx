@@ -27,6 +27,11 @@ type Props = {
     originalServiceUrl: string;
     clippingGeometry: Geometry;
     bandIndexes?: string;
+    /**
+     * `Method` argument of the `BandArithmetic` raster function. Defaults to 0, which evaluates
+     * `bandIndexes` as a user defined expression.
+     */
+    bandArithmeticMethod?: number;
     rasterFunctionName?: string;
     logDiff?: boolean;
     token: string;
@@ -36,6 +41,7 @@ export const usePublishChangeDetectionRasterFunction = ({
     originalServiceUrl,
     clippingGeometry,
     bandIndexes,
+    bandArithmeticMethod,
     rasterFunctionName,
     logDiff,
     token,
@@ -68,6 +74,7 @@ export const usePublishChangeDetectionRasterFunction = ({
             objectId4EarlierScene: objectIdOfSelectedSceneInEarlierDate,
             objectId4LaterScene: objectIdOfSelectedSceneInLater,
             bandIndexes,
+            bandArithmeticMethod,
             rasterFunctionTemplate: rasterFunctionName,
             clippingGeometry,
             pixelValueRange: selectedRange4ChangeDetectionTool,
@@ -81,6 +88,7 @@ export const usePublishChangeDetectionRasterFunction = ({
         changeDetectionToolFullPixelValueRange,
         selectedRange4ChangeDetectionTool,
         bandIndexes,
+        bandArithmeticMethod,
         rasterFunctionName,
         logDiff,
     ]);

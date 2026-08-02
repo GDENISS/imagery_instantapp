@@ -64,6 +64,26 @@ export const ChangeCompareToolContainer = () => {
                         value: 'moisture' as SpectralIndex,
                         label: t('moisture_index'),
                     },
+                    {
+                        value: 'evi' as SpectralIndex,
+                        label: t('evi_index'),
+                    },
+                    {
+                        value: 'savi' as SpectralIndex,
+                        label: t('savi_index'),
+                    },
+                    {
+                        value: 'msavi' as SpectralIndex,
+                        label: t('msavi_index'),
+                    },
+                    {
+                        value: 'ndre' as SpectralIndex,
+                        label: t('ndre_index'),
+                    },
+                    {
+                        value: 'ndci' as SpectralIndex,
+                        label: t('ndci_index'),
+                    },
                     // {
                     //     value: 'urban' as SpectralIndex,
                     //     label: t('urban_index'),

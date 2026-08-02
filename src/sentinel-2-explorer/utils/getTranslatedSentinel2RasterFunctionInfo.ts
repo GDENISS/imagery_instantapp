@@ -50,6 +50,26 @@ const translationKeyLookup: Record<
         labelTranslationKey: 'mndwi_colorized_label',
         descriptionTranslationKey: 'mndwi_colorized_description',
     },
+    'EVI Colorized': {
+        labelTranslationKey: 'evi_colorized_label',
+        descriptionTranslationKey: 'evi_colorized_description',
+    },
+    'SAVI Colorized': {
+        labelTranslationKey: 'savi_colorized_label',
+        descriptionTranslationKey: 'savi_colorized_description',
+    },
+    'MSAVI2 Colorized': {
+        labelTranslationKey: 'msavi_colorized_label',
+        descriptionTranslationKey: 'msavi_colorized_description',
+    },
+    'NDRE Colorized': {
+        labelTranslationKey: 'ndre_colorized_label',
+        descriptionTranslationKey: 'ndre_colorized_description',
+    },
+    'NDCI Colorized': {
+        labelTranslationKey: 'ndci_colorized_label',
+        descriptionTranslationKey: 'ndci_colorized_description',
+    },
 };
 
 /**

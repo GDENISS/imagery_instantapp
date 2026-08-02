@@ -100,6 +100,21 @@ export const DefaultPixelValueRangeBySelectedIndex: MaskToolPixelValueRangeBySpe
         burn: {
             selectedRange: [0, 1],
         },
+        evi: {
+            selectedRange: [0, 1],
+        },
+        savi: {
+            selectedRange: [0, 1],
+        },
+        msavi: {
+            selectedRange: [0, 1],
+        },
+        ndre: {
+            selectedRange: [0, 1],
+        },
+        ndci: {
+            selectedRange: [0, 1],
+        },
     };
 
 export const initialMaskToolState: MaskToolState = {
@@ -117,6 +132,11 @@ export const initialMaskToolState: MaskToolState = {
         ship: [255, 0, 21],
         urban: [255, 0, 21],
         burn: [0, 0, 0],
+        evi: [163, 255, 115],
+        savi: [255, 211, 127],
+        msavi: [245, 184, 122],
+        ndre: [255, 130, 220],
+        ndci: [122, 255, 204],
     },
     // totalVisibleAreaInSqKm: null,
     // countOfVisiblePixels: 0,

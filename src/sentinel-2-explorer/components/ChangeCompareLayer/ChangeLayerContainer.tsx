@@ -39,7 +39,7 @@ import { useAppDispatch } from '@shared/store/configureStore';
 import { countOfVisiblePixelsChanged } from '@shared/store/Map/reducer';
 import { getChangeCompareLayerRasterFunction } from '@shared/components/ChangeCompareLayer/helpers';
 import { useChangeCompareLayerVisibility } from '@shared/components/ChangeCompareLayer';
-import { getBandIndexesBySpectralIndex } from '@shared/services/sentinel-2/helpers';
+import { getBandArithmeticParams4SpectralIndex } from '@shared/services/sentinel-2/helpers';
 import { getSentinel2FeatureByObjectId } from '@shared/services/sentinel-2/getSentinel2Scenes';
 import { SENTINEL_2_SERVICE_URL } from '@shared/services/sentinel-2/config';
 
@@ -74,7 +74,8 @@ export const ChangeLayerContainer: FC<Props> = ({ mapView, groupLayer }) => {
     useEffect(() => {
         (async () => {
             try {
-                const bandIndex = getBandIndexesBySpectralIndex(spectralIndex);
+                const bandArithmeticParams =
+                    getBandArithmeticParams4SpectralIndex(spectralIndex);
 
                 const feature = await getSentinel2FeatureByObjectId(
                     queryParams4SceneA?.objectIdOfSelectedScene
@@ -82,7 +83,8 @@ export const ChangeLayerContainer: FC<Props> = ({ mapView, groupLayer }) => {
 
                 const rasterFunction =
                     await getChangeCompareLayerRasterFunction({
-                        bandIndex,
+                        bandIndex: bandArithmeticParams?.bandIndexes,
+                        bandArithmeticMethod: bandArithmeticParams?.method,
                         clippingGeometry: feature.geometry as any,
                         queryParams4SceneA,
                         queryParams4SceneB,

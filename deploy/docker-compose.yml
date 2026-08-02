@@ -1,0 +1,43 @@
+# Sentinel-2 Explorer on the VPS.
+#
+# Run from the REPOSITORY ROOT so the build context includes the source and the env file:
+#   docker compose -f deploy/docker-compose.yml up -d --build
+#
+# Port choice matters on this host. Already taken by existing containers:
+#   80    rapida_backend_nginx_1
+#   3000  revenue-system-web-1
+#   8000  rapida_backend_web_1
+#   8080  nginx4rapida_geonode
+#   8081  revenue-system-api-1
+#   8443  nginx4rapida_geonode
+#   29092 kafka
+#
+# 8090 is used below because it is clear of all of those. Confirm before starting:
+#   sudo ss -tlnp | grep -E ':(80|443|8090)\b'
+
+services:
+    sentinel2explorer:
+        build:
+            # the repository root, so package.json and .env.production are in the context
+            context: ..
+            dockerfile: deploy/Dockerfile
+            args:
+                APP: sentinel2explorer
+                ENV_FILE: .env.production
+        image: sentinel2explorer:latest
+        container_name: sentinel2explorer
+        restart: unless-stopped
+        ports:
+            # Bound to localhost only: the container is not meant to be reachable from the internet
+            # directly, only through the reverse proxy that terminates TLS. Drop the 127.0.0.1 prefix
+            # only if you deliberately want it exposed.
+            - '127.0.0.1:8090:80'
+        networks:
+            - web
+
+networks:
+    web:
+        # Set `external: true` and change the name to the network your edge proxy already uses if you
+        # intend to proxy to this container by name (http://sentinel2explorer:80) rather than by port.
+        # Find it with: docker network ls
+        driver: bridge

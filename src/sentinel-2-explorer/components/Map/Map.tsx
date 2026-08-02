@@ -33,6 +33,7 @@ import { SENTINEL_2_SERVICE_URL } from '@shared/services/sentinel-2/config';
 import { Sentinel2Layer } from '../Sentinel2Layer';
 import { Sentinel2MaskLayer } from '../MaskLayer';
 import { Sentinel2ChangeLayer } from '../ChangeCompareLayer';
+import { Sentinel2ParcelLayer } from '../ParcelLayer';
 import { APP_NAME } from '@shared/config';
 import { useTranslation } from 'react-i18next';
 import { FootPrintOfSelectedScene } from '@shared/components/FootPrintOfSelectedScene';
@@ -59,6 +60,7 @@ const Map = () => {
                 <Sentinel2Layer />
                 <Sentinel2MaskLayer />
                 <Sentinel2ChangeLayer />
+                <Sentinel2ParcelLayer />
                 <AnalysisToolQueryLocation />
                 <MapPopUpAnchorPoint />
                 <AnimationLayer

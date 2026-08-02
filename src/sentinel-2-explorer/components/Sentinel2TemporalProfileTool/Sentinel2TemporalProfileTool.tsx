@@ -127,6 +127,26 @@ export const Sentinel2TemporalProfileTool = () => {
                         value: 'vegetation' as SpectralIndex,
                         label: t('vegetation'),
                     },
+                    {
+                        value: 'evi' as SpectralIndex,
+                        label: t('evi'),
+                    },
+                    {
+                        value: 'savi' as SpectralIndex,
+                        label: t('savi'),
+                    },
+                    {
+                        value: 'msavi' as SpectralIndex,
+                        label: t('msavi'),
+                    },
+                    {
+                        value: 'ndre' as SpectralIndex,
+                        label: t('ndre'),
+                    },
+                    {
+                        value: 'ndci' as SpectralIndex,
+                        label: t('ndci'),
+                    },
                 ]}
                 tooltipText={t('temporal_profile_tooltip')}
             />

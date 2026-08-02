@@ -31,6 +31,7 @@ import PublishAndDownloadJobs from './PublishAndDownloadJobs/reducer';
 import ImageryService from './ImageryService/reducer';
 import UrbanHeatIslandTool from './UrbanHeatIslandTool/reducer';
 import DisasterImageryExplorer from './DisasterImageryExplorer/reducer';
+import ParcelTool from './ParcelTool/reducer';
 
 const reducers = combineReducers({
     Map,
@@ -50,6 +51,7 @@ const reducers = combineReducers({
     PublishAndDownloadJobs,
     UrbanHeatIslandTool,
     DisasterImageryExplorer,
+    ParcelTool,
 });
 
 export default reducers;

@@ -16,6 +16,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import ImageryLayer from '@arcgis/core/layers/ImageryLayer';
 import MosaicRule from '@arcgis/core/layers/support/MosaicRule';
+import { getRasterFunction4RasterFunctionName } from '@shared/services/helpers/clientSideRasterFunctions';
 
 type Props = {
     /**
@@ -23,7 +24,10 @@ type Props = {
      */
     url: string;
     /**
-     * name of selected raster function that will be used to render the imagery layer
+     * name of selected raster function that will be used to render the imagery layer.
+     *
+     * This is normally the name of a raster function template published by the image service. Names that
+     * belong to a client side renderer are expanded into the full raster function chain instead.
      */
     rasterFunction: string;
     /**
@@ -90,9 +94,8 @@ export const useImageryLayerByObjectId = ({
             // URL to the imagery service
             url,
             mosaicRule,
-            rasterFunction: {
-                functionName: rasterFunction,
-            },
+            rasterFunction:
+                getRasterFunction4RasterFunctionName(rasterFunction),
             visible,
             // blendMode: 'multiply'
         });
@@ -116,9 +119,8 @@ export const useImageryLayerByObjectId = ({
             return;
         }
 
-        layerRef.current.rasterFunction = {
-            functionName: rasterFunction,
-        } as any;
+        layerRef.current.rasterFunction =
+            getRasterFunction4RasterFunctionName(rasterFunction);
     }, [rasterFunction]);
 
     useEffect(() => {

@@ -31,7 +31,7 @@ import {
 } from '@shared/store/PublishAndDownloadJobs/reducer';
 // import { useSelectedSentinel2Scene } from '@sentinel2-explorer/hooks/useSelectedSentinel2Scene';
 import { SENTINEL_2_ORIGINAL_SERVICE_URL } from '@shared/services/sentinel-2/config';
-import { getBandIndexesBySpectralIndex } from '@shared/services/sentinel-2/helpers';
+import { getBandArithmeticParams4SpectralIndex } from '@shared/services/sentinel-2/helpers';
 import { useSentinel2MaskToolFullPixelValueRange } from '../MaskTool/useSentinel2MaskToolFullPixelValueRange';
 import { useSceneIds } from '@shared/components/SavePanel/useSceneIds';
 import { getSentinel2SceneByObjectId } from '@shared/services/sentinel-2/getSentinel2Scenes';
@@ -76,20 +76,22 @@ export const Sentinel2SavePanel = () => {
         selectSelectedIndex4MaskTool
     ) as SpectralIndex;
 
-    const maskToolBandIndexes = useMemo(() => {
+    const maskToolBandArithmeticParams = useMemo(() => {
         if (!spectralIndex4MaskTool) {
             return null;
         }
 
-        return getBandIndexesBySpectralIndex(spectralIndex4MaskTool);
+        return getBandArithmeticParams4SpectralIndex(spectralIndex4MaskTool);
     }, [spectralIndex4MaskTool]);
 
     const spectralIndex4ChangeDetection = useAppSelector(
         selectSelectedOption4ChangeCompareTool
     ) as SpectralIndex;
 
-    const changeDetectionToolBandIndexes = useMemo(() => {
-        return getBandIndexesBySpectralIndex(spectralIndex4ChangeDetection);
+    const changeDetectionToolBandArithmeticParams = useMemo(() => {
+        return getBandArithmeticParams4SpectralIndex(
+            spectralIndex4ChangeDetection
+        );
     }, [spectralIndex4ChangeDetection]);
 
     const token = getToken();
@@ -108,7 +110,8 @@ export const Sentinel2SavePanel = () => {
         originalServiceUrl: SENTINEL_2_ORIGINAL_SERVICE_URL,
         clippingGeometry,
         fullPixelValueRange: maskToolFullPixelValueRange,
-        bandIndexes: maskToolBandIndexes,
+        bandIndexes: maskToolBandArithmeticParams?.bandIndexes,
+        bandArithmeticMethod: maskToolBandArithmeticParams?.method,
         token,
     });
 
@@ -116,7 +119,9 @@ export const Sentinel2SavePanel = () => {
         usePublishChangeDetectionRasterFunction({
             originalServiceUrl: SENTINEL_2_ORIGINAL_SERVICE_URL,
             clippingGeometry,
-            bandIndexes: changeDetectionToolBandIndexes,
+            bandIndexes: changeDetectionToolBandArithmeticParams?.bandIndexes,
+            bandArithmeticMethod:
+                changeDetectionToolBandArithmeticParams?.method,
             token,
         });
 

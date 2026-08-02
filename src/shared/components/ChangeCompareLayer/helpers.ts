@@ -25,6 +25,12 @@ type GetChangeCompareLayerRasterFunctionParams = {
      */
     bandIndex: string;
     /**
+     * `Method` argument of the `BandArithmetic` raster function. Defaults to 0, which evaluates
+     * `bandIndex` as a user defined expression. Indices that rely on one of the index formulas
+     * built into `BandArithmetic` (e.g. EVI, SAVI, MSAVI2) need to pass their method number here.
+     */
+    bandArithmeticMethod?: number;
+    /**
      * geometry that will be used to clip the output imagery
      */
     clippingGeometry: Geometry;
@@ -54,6 +60,7 @@ type GetChangeCompareLayerRasterFunctionParams = {
  */
 export const getChangeCompareLayerRasterFunction = ({
     bandIndex,
+    bandArithmeticMethod = 0,
     clippingGeometry,
     queryParams4SceneA,
     queryParams4SceneB,
@@ -106,7 +113,7 @@ export const getChangeCompareLayerRasterFunction = ({
                             rasterFunction: 'BandArithmetic',
                             rasterFunctionArguments: {
                                 Raster: `$${queryParams4SceneAcquiredInLaterDate.objectIdOfSelectedScene}`,
-                                Method: 0,
+                                Method: bandArithmeticMethod,
                                 BandIndexes: bandIndex,
                             },
                             outputPixelType: 'F32',
@@ -115,7 +122,7 @@ export const getChangeCompareLayerRasterFunction = ({
                             rasterFunction: 'BandArithmetic',
                             rasterFunctionArguments: {
                                 Raster: `$${queryParams4SceneAcquiredInEarlierDate.objectIdOfSelectedScene}`,
-                                Method: 0,
+                                Method: bandArithmeticMethod,
                                 BandIndexes: bandIndex,
                             },
                             outputPixelType: 'F32',

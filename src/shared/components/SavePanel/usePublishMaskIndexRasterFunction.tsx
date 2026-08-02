@@ -25,6 +25,11 @@ type Props = {
     clippingGeometry: Geometry;
     fullPixelValueRange: number[];
     bandIndexes?: string;
+    /**
+     * `Method` argument of the `BandArithmetic` raster function. Defaults to 0, which evaluates
+     * `bandIndexes` as a user defined expression.
+     */
+    bandArithmeticMethod?: number;
     rasterFunctionName?: string;
     token: string;
 };
@@ -34,6 +39,7 @@ export const usePublishMaskIndexRasterFunction = ({
     clippingGeometry,
     fullPixelValueRange,
     bandIndexes,
+    bandArithmeticMethod,
     rasterFunctionName,
     token,
 }: Props) => {
@@ -55,6 +61,7 @@ export const usePublishMaskIndexRasterFunction = ({
             objectId: queryParams4MainScene?.objectIdOfSelectedScene,
             token,
             bandIndexes, //getBandIndexesBySpectralIndex(spectralIndex4MaskTool),
+            bandArithmeticMethod,
             rasterFunctionTemplate: rasterFunctionName,
             pixelValueRange: selectedRange,
             fullPixelValueRange,
@@ -65,6 +72,7 @@ export const usePublishMaskIndexRasterFunction = ({
         queryParams4MainScene?.objectIdOfSelectedScene,
         rasterFunctionName,
         bandIndexes,
+        bandArithmeticMethod,
         selectedRange,
         fullPixelValueRange,
     ]);

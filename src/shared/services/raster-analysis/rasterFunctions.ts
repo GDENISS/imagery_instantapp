@@ -36,6 +36,11 @@ type CreateMaskIndexRasterFunctionParams = {
      */
     bandIndexes?: string;
     /**
+     * the `Method` argument to be used in the band arithmetic function. Defaults to 0, which
+     * evaluates `bandIndexes` as a user defined expression.
+     */
+    bandArithmeticMethod?: number;
+    /**
      * the raster function template to be used in the clip function
      */
     rasterFunctionTemplate?: string;
@@ -77,6 +82,11 @@ type CreateChangeDetectionRasterFunctionParams = {
      * Optional. The band indexes to be used.
      */
     bandIndexes?: string;
+    /**
+     * Optional. The `Method` argument to be used in the band arithmetic function. Defaults to 0,
+     * which evaluates `bandIndexes` as a user defined expression.
+     */
+    bandArithmeticMethod?: number;
     /**
      * Optional. The raster function template to be used.
      */
@@ -201,12 +211,18 @@ export const createBandArithmeticRasterFunction = ({
     objectId,
     token,
     bandIndexes,
+    bandArithmeticMethod = 0,
     clippingGeometry,
 }: {
     serviceUrl: string;
     objectId: number;
     token: string;
     bandIndexes: string;
+    /**
+     * the `Method` argument of the band arithmetic function. Defaults to 0, which evaluates
+     * `bandIndexes` as a user defined expression.
+     */
+    bandArithmeticMethod?: number;
     clippingGeometry: Geometry;
 }) => {
     if (!bandIndexes || !clippingGeometry || !objectId) {
@@ -237,7 +253,7 @@ export const createBandArithmeticRasterFunction = ({
                 name: 'Method',
                 isPublic: false,
                 isDataset: false,
-                value: 0,
+                value: bandArithmeticMethod,
                 type: 'RasterFunctionVariable',
             },
             BandIndexes: {
@@ -308,6 +324,7 @@ export const createMaskIndexRasterFunction = ({
     fullPixelValueRange,
     clippingGeometry,
     bandIndexes,
+    bandArithmeticMethod,
     rasterFunctionTemplate,
 }: CreateMaskIndexRasterFunctionParams) => {
     // const bandArithmeticRasterFunction = createBandArithmeticRasterFunction({
@@ -330,6 +347,7 @@ export const createMaskIndexRasterFunction = ({
             objectId,
             token,
             bandIndexes,
+            bandArithmeticMethod,
             clippingGeometry,
         });
     } else if (rasterFunctionTemplate) {
@@ -478,6 +496,7 @@ export const createChangeDetectionRasterFunction = ({
     fullPixelValueRange,
     clippingGeometry,
     bandIndexes,
+    bandArithmeticMethod,
     rasterFunctionTemplate,
     logDiff,
 }: CreateChangeDetectionRasterFunctionParams) => {
@@ -498,6 +517,7 @@ export const createChangeDetectionRasterFunction = ({
               objectId: objectId4EarlierScene,
               token,
               bandIndexes,
+              bandArithmeticMethod,
               clippingGeometry,
           });
 
@@ -514,6 +534,7 @@ export const createChangeDetectionRasterFunction = ({
               objectId: objectId4LaterScene,
               token,
               bandIndexes,
+              bandArithmeticMethod,
               clippingGeometry,
           });
 

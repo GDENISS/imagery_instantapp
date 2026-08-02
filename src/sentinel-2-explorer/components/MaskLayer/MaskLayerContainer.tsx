@@ -38,7 +38,7 @@ import { useCalculateTotalAreaByPixelsCount } from '@shared/hooks/useCalculateTo
 import { useAppDispatch } from '@shared/store/configureStore';
 import { countOfVisiblePixelsChanged } from '@shared/store/Map/reducer';
 import { SENTINEL_2_SERVICE_URL } from '@shared/services/sentinel-2/config';
-import { getBandIndexesBySpectralIndex } from '@shared/services/sentinel-2/helpers';
+import { getBandArithmeticParams4SpectralIndex } from '@shared/services/sentinel-2/helpers';
 import { useMaskLayerVisibility } from '@shared/components/MaskLayer/useMaskLayerVisibility';
 import { useSentinel2MaskToolFullPixelValueRange } from '../MaskTool/useSentinel2MaskToolFullPixelValueRange';
 
@@ -72,12 +72,15 @@ export const MaskLayerContainer: FC<Props> = ({ mapView, groupLayer }) => {
             return null;
         }
 
+        const bandArithmeticParams =
+            getBandArithmeticParams4SpectralIndex(spectralIndex);
+
         return new RasterFunction({
             functionName: 'BandArithmetic',
             outputPixelType: 'f32',
             functionArguments: {
-                Method: 0,
-                BandIndexes: getBandIndexesBySpectralIndex(spectralIndex) || '',
+                Method: bandArithmeticParams?.method || 0,
+                BandIndexes: bandArithmeticParams?.bandIndexes || '',
             },
         });
     }, [spectralIndex]);

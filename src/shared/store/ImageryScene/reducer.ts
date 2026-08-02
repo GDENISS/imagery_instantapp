@@ -59,7 +59,8 @@ export type AnalysisTool =
     | 'spectral' // spectral profile tool to plot spectral profile for a selected point
     | 'change' // change detection tool to compare two scenes
     | 'temporal composite' // temporal composite tool to create a composite image from multiple scenes
-    | 'urban heat island'; // urban heat island tool that runs Landsat Surface Intra-Urban Heat Island (SIUHI) workflow.
+    | 'urban heat island' // urban heat island tool that runs Landsat Surface Intra-Urban Heat Island (SIUHI) workflow.
+    | 'parcel'; // parcel report tool to extract a spectral index time series for a user drawn parcel and export it as CSV
 
 /**
  * the sub-mode of the Swipe mode, which determines how the two scenes are compared with each other

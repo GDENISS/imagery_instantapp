@@ -51,7 +51,33 @@ export type SpectralIndex =
     | 'temperature farhenheit'
     | 'temperature celcius'
     | 'urban'
-    | 'burn';
+    | 'burn'
+    /**
+     * Enhanced Vegetation Index. A vegetation index that corrects for soil background
+     * and atmospheric aerosol scattering, which makes it more reliable than NDVI over
+     * densely vegetated areas where NDVI tends to saturate.
+     */
+    | 'evi'
+    /**
+     * Soil-Adjusted Vegetation Index. NDVI with a soil brightness correction factor,
+     * intended for areas with sparse vegetation and exposed soil.
+     */
+    | 'savi'
+    /**
+     * Modified Soil-Adjusted Vegetation Index (MSAVI2). A SAVI variant that derives the
+     * soil correction factor from the imagery itself instead of requiring it as an input.
+     */
+    | 'msavi'
+    /**
+     * Normalized Difference Red Edge. Uses the red edge band instead of red, which keeps
+     * responding to chlorophyll after NDVI saturates in dense canopy.
+     */
+    | 'ndre'
+    /**
+     * Normalized Difference Chlorophyll Index. A red edge based index used to estimate
+     * chlorophyll-a concentration in inland and coastal water bodies.
+     */
+    | 'ndci';
 
 /**
  * Name of Radar Index for SAR image (e.g. Sentinel-1)

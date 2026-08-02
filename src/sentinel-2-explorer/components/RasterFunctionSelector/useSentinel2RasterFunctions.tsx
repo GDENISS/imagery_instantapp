@@ -38,22 +38,31 @@ import NDMILegend from './legends/NDMI_noText.png';
 // import { AppContext } from '@shared/contexts/AppContextProvider';
 import { useAppSelector } from '@shared/store/configureStore';
 import { selectImageryServiceRasterFunctionInfo } from '@shared/store/ImageryService/selectors';
+import { getClientSideRasterFunction } from '@shared/services/helpers/clientSideRasterFunctions';
 
-const Sentinel2RendererThumbnailByName: Record<Sentinel2FunctionName, string> =
-    {
-        'Agriculture for Visualization': ThumbnailAgriculture,
-        'Bathymetric for Visualization': ThumbnailBathymetric,
-        'Color Infrared for Visualization': ThumbnailColorIR,
-        'Natural Color for Visualization': ThumbnailNatrualColor,
-        'Geology for Visualization': ThumbnailGeology,
-        'Short-wave Infrared for Visualization': ThumbnailSWIR,
-        'NDVI Colorized for Visualization': ThumbnailNDVI,
-        'NDMI Colorized for Visualization': ThumbnailNDMI,
-        'MNDWI Colorized for Visualization': ThumbnailMNDWI,
-        'Urban for Visualization': ThumbnailUrban,
-    };
+/**
+ * The colorized spectral index renderers carry their own thumbnail and legend, both generated from the
+ * color ramp of the renderer itself, so they are looked up from the client side renderer registry rather
+ * than being listed here.
+ */
+const Sentinel2RendererThumbnailByName: Partial<
+    Record<Sentinel2FunctionName, string>
+> = {
+    'Agriculture for Visualization': ThumbnailAgriculture,
+    'Bathymetric for Visualization': ThumbnailBathymetric,
+    'Color Infrared for Visualization': ThumbnailColorIR,
+    'Natural Color for Visualization': ThumbnailNatrualColor,
+    'Geology for Visualization': ThumbnailGeology,
+    'Short-wave Infrared for Visualization': ThumbnailSWIR,
+    'NDVI Colorized for Visualization': ThumbnailNDVI,
+    'NDMI Colorized for Visualization': ThumbnailNDMI,
+    'MNDWI Colorized for Visualization': ThumbnailMNDWI,
+    'Urban for Visualization': ThumbnailUrban,
+};
 
-const Sentinel2RendererLegendByName: Record<Sentinel2FunctionName, string> = {
+const Sentinel2RendererLegendByName: Partial<
+    Record<Sentinel2FunctionName, string>
+> = {
     'Agriculture for Visualization': null,
     'Bathymetric for Visualization': null,
     'Color Infrared for Visualization': null,
@@ -85,8 +94,15 @@ export const useSentinel2RasterFunctions = (): RasterFunctionInfo[] => {
         return rasterFunctionInfo.map((d) => {
             const name: Sentinel2FunctionName = d.name as Sentinel2FunctionName;
 
-            const thumbnail = Sentinel2RendererThumbnailByName[name];
-            const legend = Sentinel2RendererLegendByName[name];
+            const clientSideRasterFunction = getClientSideRasterFunction(name);
+
+            const thumbnail =
+                clientSideRasterFunction?.thumbnail ||
+                Sentinel2RendererThumbnailByName[name];
+
+            const legend =
+                clientSideRasterFunction?.legend ||
+                Sentinel2RendererLegendByName[name];
 
             return {
                 ...d,

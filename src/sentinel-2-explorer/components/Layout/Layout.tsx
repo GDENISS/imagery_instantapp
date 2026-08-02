@@ -50,6 +50,7 @@ import { Sentinel2AnalyzeToolSelector } from '../AnalyzeToolSelector/AnalyzeTool
 import { Sentinel2MaskTool } from '../MaskTool';
 import { Sentinel2ChangeCompareTool } from '../ChangeCompareTool';
 import { Sentinel2SpectralProfileTool } from '../SpectralProfileTool';
+import { Sentinel2ParcelTool } from '../ParcelTool';
 import { Sentinel2TemporalProfileTool } from '../Sentinel2TemporalProfileTool/Sentinel2TemporalProfileTool';
 import { Sentinel2SavePanel } from '../Sentinel2SavePanel';
 import { Sentinel2InterestingPlaces } from '../Sentinel2InterestingPlaces';
@@ -131,6 +132,7 @@ const Layout = () => {
                                     <Sentinel2TemporalProfileTool />
                                     <Sentinel2SpectralProfileTool />
                                     <Sentinel2ChangeCompareTool />
+                                    <Sentinel2ParcelTool />
                                 </div>
                             )}
 

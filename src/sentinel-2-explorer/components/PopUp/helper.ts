@@ -30,6 +30,16 @@ export const getMainContent = (values: number[], mapPoint: Point) => {
         values
     ).toFixed(3);
 
+    const eviIndex = calcSentinel2SpectralIndex('evi', values).toFixed(3);
+
+    const saviIndex = calcSentinel2SpectralIndex('savi', values).toFixed(3);
+
+    const msaviIndex = calcSentinel2SpectralIndex('msavi', values).toFixed(3);
+
+    const ndreIndex = calcSentinel2SpectralIndex('ndre', values).toFixed(3);
+
+    const ndciIndex = calcSentinel2SpectralIndex('ndci', values).toFixed(3);
+
     // const content = `
     //     <div class='text-custom-light-blue text-xs'
     //         data-testid='sentinel-2-popup-content'
@@ -51,11 +61,21 @@ export const getMainContent = (values: number[], mapPoint: Point) => {
             data-sentinel-2-ndmi="${moistureIndex}"
             data-sentinel-2-ndvi="${vegetationIndex}"
             data-sentinel-2-mndwi="${waterIndex}"
+            data-sentinel-2-evi="${eviIndex}"
+            data-sentinel-2-savi="${saviIndex}"
+            data-sentinel-2-msavi="${msaviIndex}"
+            data-sentinel-2-ndre="${ndreIndex}"
+            data-sentinel-2-ndci="${ndciIndex}"
         >
             <div style='margin-bottom: 0.5rem;'>
                 <span><span style='color: var(--custom-light-blue-50);'>NDMI:</span> ${moistureIndex}</span><br />
                 <span><span style='color: var(--custom-light-blue-50);'>NDVI:</span> ${vegetationIndex}</span><br />
-                <span><span style='color: var(--custom-light-blue-50);'>MNDWI:</span> ${waterIndex}</span>
+                <span><span style='color: var(--custom-light-blue-50);'>MNDWI:</span> ${waterIndex}</span><br />
+                <span><span style='color: var(--custom-light-blue-50);'>EVI:</span> ${eviIndex}</span><br />
+                <span><span style='color: var(--custom-light-blue-50);'>SAVI:</span> ${saviIndex}</span><br />
+                <span><span style='color: var(--custom-light-blue-50);'>MSAVI2:</span> ${msaviIndex}</span><br />
+                <span><span style='color: var(--custom-light-blue-50);'>NDRE:</span> ${ndreIndex}</span><br />
+                <span><span style='color: var(--custom-light-blue-50);'>NDCI:</span> ${ndciIndex}</span>
             </div>
         </div>
     `;

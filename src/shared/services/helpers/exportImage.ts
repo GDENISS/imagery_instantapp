@@ -15,6 +15,7 @@
 
 import IExtent from '@arcgis/core/geometry/Extent';
 import { getLockRasterMosaicRule } from './getMosaicRules';
+import { getRenderingRule4RasterFunctionName } from './clientSideRasterFunctions';
 
 type ExportImageParams = {
     /**
@@ -34,7 +35,10 @@ type ExportImageParams = {
      */
     height: number;
     /**
-     * raster function name that will be used in the rendering rule
+     * raster function name that will be used in the rendering rule.
+     *
+     * Names that belong to a client side renderer are expanded into the full raster function chain, so
+     * that animation frames match what the imagery layer shows on the map.
      */
     rasterFunctionName: string;
     /**
@@ -63,7 +67,9 @@ export const exportImage = async ({
         format: 'jpgpng',
         size: `${width},${height}`,
         mosaicRule: JSON.stringify(getLockRasterMosaicRule([objectId])),
-        renderingRule: JSON.stringify({ rasterFunction: rasterFunctionName }),
+        renderingRule: JSON.stringify(
+            getRenderingRule4RasterFunctionName(rasterFunctionName)
+        ),
     });
 
     const requestURL = `${serviceUrl}/exportImage?${params.toString()}`;

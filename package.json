@@ -152,6 +152,7 @@
         "@arcgis/core": "^5.1.8",
         "@arcgis/map-components": "^5.1.8",
         "@esri/arcgis-rest-feature-service": "^4.0.4",
+        "@esri/arcgis-rest-request": "^4.10.3",
         "@esri/calcite-components": "^5.1.1",
         "@reduxjs/toolkit": "2.5",
         "@vannizhang/images-to-video-converter-client": "^1.1.14",
@@ -168,7 +169,8 @@
         "react-dom": "^19.1.1",
         "react-i18next": "^15.4.1",
         "react-redux": "9.2",
-        "redux": "^5.0.1"
+        "redux": "^5.0.1",
+        "shpjs": "^6.2.0"
     },
     "browserslist": [
         "defaults"

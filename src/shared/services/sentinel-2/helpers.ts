@@ -66,7 +66,31 @@ export const parseSentinel2ProductInfo = (
 };
 
 /**
- * Sentinel-2 Band Index by Spectral Index
+ * Input for the `BandArithmetic` raster function.
+ *
+ * The `BandArithmetic` function can either evaluate a user defined expression (`Method` 0), or one of
+ * the index formulas that are built into the raster function itself. The user defined expression parser
+ * only supports the `+`, `-`, `*` and `/` operators over band references (e.g. `B8`), so any index that
+ * needs a square root or hard coded coefficients has to use its built-in method instead.
+ *
+ * @see https://developers.arcgis.com/rest/services-reference/enterprise/raster-function-objects/#band-arithmetic
+ */
+export type BandArithmeticParams = {
+    /**
+     * `Method` argument of the `BandArithmetic` raster function.
+     * - 0 = user defined expression, in which case `bandIndexes` holds the expression
+     * - anything else = a built-in index formula, in which case `bandIndexes` holds a
+     *   space delimited list of the band numbers (and coefficients) that formula expects
+     */
+    method: number;
+    /**
+     * `BandIndexes` argument of the `BandArithmetic` raster function.
+     */
+    bandIndexes: string;
+};
+
+/**
+ * Sentinel-2 Band Arithmetic parameters by Spectral Index
  *
  * Here is the list of Sentinel-2 Bands:
  * - Band 1: Aerosols (60m)
@@ -88,7 +112,9 @@ export const parseSentinel2ProductInfo = (
  * @see https://pro.arcgis.com/en/pro-app/3.0/help/analysis/raster-functions/band-arithmetic-function.htm
  * @see https://www.esri.com/about/newsroom/arcuser/spectral-library/
  */
-const BandIndexesLookup: Partial<Record<SpectralIndex, string>> = {
+const BandArithmeticParamsLookup: Partial<
+    Record<SpectralIndex, BandArithmeticParams>
+> = {
     /**
      * The Normalized Difference Moisture Index (NDMI) is sensitive to the moisture levels in vegetation.
      * It is used to monitor droughts as well as monitor fuel levels in fire-prone areas.
@@ -98,7 +124,7 @@ const BandIndexesLookup: Partial<Record<SpectralIndex, string>> = {
      * - NIR = pixel values from the near-infrared band
      * - SWIR1 = pixel values from the first shortwave infrared band
      */
-    moisture: '(B8-B11)/(B8+B11)',
+    moisture: { method: 0, bandIndexes: '(B8-B11)/(B8+B11)' },
     /**
      * The Green Normalized Difference Vegetation Index (GNDVI) method is a vegetation index for estimating photo synthetic activity
      * and is a commonly used vegetation index to determine water and nitrogen uptake into the plant canopy.
@@ -109,7 +135,7 @@ const BandIndexesLookup: Partial<Record<SpectralIndex, string>> = {
      *
      * This index outputs values between -1.0 and 1.0.
      */
-    vegetation: '(B8-B4)/(B8+B4)',
+    vegetation: { method: 0, bandIndexes: '(B8-B4)/(B8+B4)' },
     /**
      * The Modified Normalized Difference Water Index (MNDWI) uses green and SWIR bands for the enhancement of open water features.
      *
@@ -117,7 +143,64 @@ const BandIndexesLookup: Partial<Record<SpectralIndex, string>> = {
      * - Green = pixel values from the green band
      * - SWIR = pixel values from the shortwave infrared band
      */
-    water: '(B3-B11)/(B3+B11)',
+    water: { method: 0, bandIndexes: '(B3-B11)/(B3+B11)' },
+    /**
+     * The Normalized Difference Red Edge (NDRE) swaps the red band of NDVI for the red edge band.
+     * Chlorophyll absorption is weaker at the red edge, so the index keeps responding to canopy
+     * condition in dense vegetation where NDVI has already saturated. It is widely used for
+     * nitrogen status and mid-to-late season crop monitoring.
+     *
+     * NDRE = (NIR - RedEdge) / (NIR + RedEdge)
+     * - NIR = pixel values from the near-infrared band
+     * - RedEdge = pixel values from the first red edge band
+     *
+     * This index outputs values between -1.0 and 1.0.
+     */
+    ndre: { method: 0, bandIndexes: '(B8-B5)/(B8+B5)' },
+    /**
+     * The Normalized Difference Chlorophyll Index (NDCI) estimates chlorophyll-a concentration
+     * in inland and coastal waters. It contrasts the red edge band, where algal pigments reflect,
+     * against the red band, where they absorb, which makes algal blooms stand out.
+     *
+     * NDCI = (RedEdge - Red) / (RedEdge + Red)
+     * - RedEdge = pixel values from the first red edge band
+     * - Red = pixel values from the red band
+     *
+     * This index outputs values between -1.0 and 1.0.
+     */
+    ndci: { method: 0, bandIndexes: '(B5-B4)/(B5+B4)' },
+    /**
+     * The Enhanced Vegetation Index (EVI) corrects for both soil background and atmospheric
+     * aerosol scattering by bringing the blue band into the NDVI formula. It stays sensitive in
+     * high biomass areas where NDVI saturates.
+     *
+     * EVI = 2.5 * (NIR - Red) / (NIR + 6 * Red - 7.5 * Blue + 1)
+     *
+     * The coefficients are supplied by the built-in `EVI` method (19), which takes the NIR, Red
+     * and Blue band numbers. A user defined expression cannot be used here because its parser
+     * does not accept the numeric coefficients.
+     */
+    evi: { method: 19, bandIndexes: '8 4 2' },
+    /**
+     * The Soil-Adjusted Vegetation Index (SAVI) adds a soil brightness correction factor `L` to
+     * NDVI, which suppresses the influence of exposed soil in areas of sparse vegetation.
+     *
+     * SAVI = ((NIR - Red) / (NIR + Red + L)) * (1 + L)
+     *
+     * The built-in `SAVI` method (2) takes the NIR and Red band numbers followed by `L`. `L` is set
+     * to 0.5, the value that works across the widest range of vegetation densities.
+     */
+    savi: { method: 2, bandIndexes: '8 4 0.5' },
+    /**
+     * The Modified Soil-Adjusted Vegetation Index (MSAVI2) derives the soil correction factor from
+     * the imagery instead of taking it as an input, which removes the need to pick an `L` value.
+     *
+     * MSAVI2 = (2 * NIR + 1 - sqrt((2 * NIR + 1)^2 - 8 * (NIR - Red))) / 2
+     *
+     * The built-in `MSAVI2` method (4) takes the NIR and Red band numbers. A user defined
+     * expression cannot be used here because its parser has no square root operator.
+     */
+    msavi: { method: 4, bandIndexes: '8 4' },
     // /**
     //  * The Normalized Difference Built-up Index (NDBI) uses the NIR and SWIR bands to emphasize man-made built-up areas.
     //  * It is ratio based to mitigate the effects of terrain illumination differences as well as atmospheric effects.
@@ -126,7 +209,7 @@ const BandIndexesLookup: Partial<Record<SpectralIndex, string>> = {
     //  * - SWIR = pixel values from the shortwave infrared band
     //  * - NIR = pixel values from the near-infrared band
     //  */
-    // urban: '(B12-B8)/(B12+B8)',
+    // urban: { method: 0, bandIndexes: '(B12-B8)/(B12+B8)' },
     // /**
     //  * The Normalized Burn Ratio Index (NBRI) uses the NIR and SWIR bands to emphasize burned areas, while mitigating illumination and atmospheric effects.
     //  *
@@ -134,13 +217,32 @@ const BandIndexesLookup: Partial<Record<SpectralIndex, string>> = {
     //  * - NIR = pixel values from the near-infrared band
     //  * - SWIR = pixel values from the shortwave infrared band
     //  */
-    // burn: '(B13-B8)/(B13+B8)',
+    // burn: { method: 0, bandIndexes: '(B13-B8)/(B13+B8)' },
 };
 
+/**
+ * Get the `Method` and `BandIndexes` arguments that the `BandArithmetic` raster function needs
+ * in order to compute the input spectral index from a Sentinel-2 scene.
+ *
+ * @param spectralIndex name of the spectral index
+ * @returns the band arithmetic parameters, or undefined if the index is not supported for Sentinel-2
+ */
+export const getBandArithmeticParams4SpectralIndex = (
+    spectralIndex: SpectralIndex
+): BandArithmeticParams => {
+    return BandArithmeticParamsLookup[spectralIndex];
+};
+
+/**
+ * Get the `BandIndexes` argument of the `BandArithmetic` raster function for the input spectral index.
+ *
+ * Keep in mind that not every index is computed with a user defined expression, so this value is only
+ * meaningful alongside the matching `Method`. Use {@link getBandArithmeticParams4SpectralIndex} to get both.
+ */
 export const getBandIndexesBySpectralIndex = (
     spectralIndex: SpectralIndex
 ): string => {
-    return BandIndexesLookup[spectralIndex];
+    return BandArithmeticParamsLookup[spectralIndex]?.bandIndexes;
 };
 
 /**
@@ -233,6 +335,13 @@ export const calcSentinel2SpectralIndex = (
 
     let value = 0;
 
+    /**
+     * Soil brightness correction factor used by SAVI. This has to stay in sync with the `L`
+     * coefficient in the SAVI entry of `BandArithmeticParamsLookup`, otherwise the value read out
+     * in the popup would not match the value rendered on the map.
+     */
+    const SAVI_SOIL_BRIGHTNESS_CORRECTION_FACTOR = 0.5;
+
     // Calculate the value based on the input spectral index
     if (spectralIndex === 'moisture') {
         value = (B8 - B11) / (B8 + B11);
@@ -240,6 +349,24 @@ export const calcSentinel2SpectralIndex = (
         value = (B8 - B4) / (B8 + B4);
     } else if (spectralIndex === 'water') {
         value = (B3 - B11) / (B3 + B11);
+    } else if (spectralIndex === 'ndre') {
+        value = (B8 - B5) / (B8 + B5);
+    } else if (spectralIndex === 'ndci') {
+        value = (B5 - B4) / (B5 + B4);
+    } else if (spectralIndex === 'evi') {
+        value = (2.5 * (B8 - B4)) / (B8 + 6 * B4 - 7.5 * B2 + 1);
+    } else if (spectralIndex === 'savi') {
+        const L = SAVI_SOIL_BRIGHTNESS_CORRECTION_FACTOR;
+        value = ((B8 - B4) / (B8 + B4 + L)) * (1 + L);
+    } else if (spectralIndex === 'msavi') {
+        // MSAVI2, the variant that solves for the soil correction factor instead of taking it as an input
+        value = (2 * B8 + 1 - Math.sqrt((2 * B8 + 1) ** 2 - 8 * (B8 - B4))) / 2;
+    }
+
+    // EVI and MSAVI2 both divide by a term that can approach zero, which produces a non finite
+    // result. Fall back to 0 so the popup and the trend chart do not render `NaN`/`Infinity`.
+    if (!Number.isFinite(value)) {
+        return 0;
     }
 
     return value;

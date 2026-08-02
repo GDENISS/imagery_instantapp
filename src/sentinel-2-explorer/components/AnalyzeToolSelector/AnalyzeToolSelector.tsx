@@ -43,6 +43,11 @@ export const Sentinel2AnalyzeToolSelector = () => {
                 title: t('change'),
                 subtitle: t('detection').toLowerCase(),
             },
+            {
+                tool: 'parcel',
+                title: t('parcel'),
+                subtitle: t('report').toLowerCase(),
+            },
         ];
     }, []);
 

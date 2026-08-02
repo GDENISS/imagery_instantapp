@@ -16,6 +16,18 @@
 // import { TIER } from '@shared/constants';
 // import { TIER } from '@shared/config';
 
+import { registerClientSideRasterFunctions } from '@shared/services/helpers/clientSideRasterFunctions';
+import { SENTINEL2_CLIENT_SIDE_RASTER_FUNCTIONS } from './spectralIndexRenderers';
+
+/**
+ * Make the colorized spectral index renderers resolvable by name, so that the imagery layer and the
+ * animation frame export can send their raster function chains to the image service.
+ *
+ * This lives next to `SENTINEL2_RASTER_FUNCTIONS` so the registration cannot drift from the list of
+ * renderer names the app offers.
+ */
+registerClientSideRasterFunctions(SENTINEL2_CLIENT_SIDE_RASTER_FUNCTIONS);
+
 // const serviceConfig = getServiceConfig('sentinel-2');
 // console.log('sentinel-2 service config', serviceConfig);
 
@@ -94,6 +106,12 @@ export enum FIELD_NAMES {
 
 /**
  * List of Raster Functions for the Sentinel-1 service
+ *
+ * The entries suffixed with `for Visualization` are raster function templates published by the image
+ * service itself. The `... Colorized` entries are chains that this app assembles and sends with every
+ * request, because the service has no template for those indices.
+ *
+ * @see SENTINEL2_CLIENT_SIDE_RASTER_FUNCTION_NAMES
  */
 const SENTINEL2_RASTER_FUNCTIONS = [
     'Natural Color for Visualization',
@@ -106,6 +124,11 @@ const SENTINEL2_RASTER_FUNCTIONS = [
     'NDVI Colorized for Visualization',
     'NDMI Colorized for Visualization',
     'MNDWI Colorized for Visualization',
+    'EVI Colorized',
+    'SAVI Colorized',
+    'MSAVI2 Colorized',
+    'NDRE Colorized',
+    'NDCI Colorized',
     // 'Normalized Burn Ratio',
 ] as const;
 
@@ -179,6 +202,36 @@ export const SENTINEL2_RASTER_FUNCTION_INFOS: {
         description:
             'Bands shortwave IR-2, shortwave IR-1, blue (12, 11, 2) with dynamic range adjustment applied. Highlights geological features.',
         label: 'Geology',
+    },
+    {
+        name: 'EVI Colorized',
+        description:
+            'Enhanced Vegetation Index with color map computed as 2.5 * (b8 - b4) / (b8 + 6 * b4 - 7.5 * b2 + 1). By correcting for soil background and atmospheric aerosols, EVI stays sensitive over dense canopy where NDVI saturates. Dark green represents vigorous vegetation and tan to brown represents sparse vegetation and bare ground.',
+        label: 'EVI',
+    },
+    {
+        name: 'SAVI Colorized',
+        description:
+            'Soil-Adjusted Vegetation Index with color map computed as ((b8 - b4) / (b8 + b4 + 0.5)) * 1.5. The soil brightness correction factor suppresses the influence of exposed soil, which makes SAVI better suited than NDVI to arid and sparsely vegetated areas.',
+        label: 'SAVI',
+    },
+    {
+        name: 'MSAVI2 Colorized',
+        description:
+            'Modified Soil-Adjusted Vegetation Index with color map. MSAVI2 derives its soil correction factor from the imagery itself rather than taking it as an input, so it needs no tuning and works well over partially vegetated ground.',
+        label: 'MSAVI2',
+    },
+    {
+        name: 'NDRE Colorized',
+        description:
+            'Normalized Difference Red Edge with color map computed as (b8 - b5) / (b8 + b5). Chlorophyll absorbs weakly at the red edge, so NDRE keeps responding to canopy condition after NDVI saturates. It is widely used to assess nitrogen status and mid-to-late season crop vigor.',
+        label: 'NDRE',
+    },
+    {
+        name: 'NDCI Colorized',
+        description:
+            'Normalized Difference Chlorophyll Index with color map computed as (b5 - b4) / (b5 + b4). NDCI estimates chlorophyll-a concentration in inland and coastal waters. Clear water appears deep blue, while the yellow to red range indicates the high concentrations associated with algal blooms.',
+        label: 'NDCI',
     },
 ];
 
