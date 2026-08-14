@@ -17,19 +17,39 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-# The ArcGIS SDK bundle is large enough that the default heap can abort the build on a small VPS.
-ENV NODE_OPTIONS=--max-old-space-size=4096
+# Cap on the V8 old space, in MB.
+#
+# This is a ceiling, not a reservation, and setting it too high is actively harmful: V8 delays serious
+# garbage collection until it approaches the limit, so a value larger than the RAM actually free on the
+# host lets the process balloon until the kernel OOM-kills it. The build then dies with SIGKILL rather
+# than a useful error. Lower it to fit the host, or add swap.
+#
+#   docker compose -f deploy/docker-compose.yml build --build-arg NODE_HEAP_MB=2048
+ARG NODE_HEAP_MB=2048
+ENV NODE_OPTIONS=--max-old-space-size=${NODE_HEAP_MB}
 
 # Install dependencies first so this layer is cached whenever only source files change.
 COPY package.json package-lock.json ./
 RUN npm ci --no-audit --no-fund
 
-COPY . .
+# Copy only what webpack actually reads, rather than the whole repository.
+#
+# A blanket `COPY . .` puts deploy/ in this layer too, so editing an nginx config would invalidate it
+# and force a full rebuild of the bundle - several minutes of compilation to change a one line header.
+# Listing the real inputs keeps deployment tweaks to a rebuild of the tiny final stage.
+COPY src ./src
+COPY public ./public
+COPY webpack ./webpack
+COPY webpack.config.js tsconfig.json postcss.config.js tailwind.config.js ./
 
 # Declared after the dependency install so that changing either one does not invalidate the cached
 # npm layer: which app in this monorepo to build, and which env file to bake in.
 ARG APP=sentinel2explorer
 ARG ENV_FILE=.env.production
+
+# package.json is named alongside the glob so that COPY still succeeds when the env file is absent -
+# a glob matching nothing is an error on its own, which would pre-empt the friendly check below.
+COPY package.json ${ENV_FILE}* ./
 
 # Fail loudly and early rather than producing an image configured with placeholder values.
 RUN test -f "${ENV_FILE}" || ( \
