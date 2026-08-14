@@ -37,10 +37,25 @@ RUN npm ci --no-audit --no-fund
 # A blanket `COPY . .` puts deploy/ in this layer too, so editing an nginx config would invalidate it
 # and force a full rebuild of the bundle - several minutes of compilation to change a one line header.
 # Listing the real inputs keeps deployment tweaks to a rebuild of the tiny final stage.
+#
+# Every entry below is load bearing, so check against this list before removing one. Note especially
+# that .babelrc is a dotfile and easy to overlook: without it babel-loader parses .tsx with no JSX
+# support and the build dies on the first React element.
+#
+#   src/                  application source
+#   public/               index.html template, favicon, thumbnails and the runtime i18n files
+#   webpack/              env loading, validation and entry point helpers used by webpack.config.js
+#   webpack.config.js     the build itself
+#   .babelrc              babel-loader presets: preset-env, preset-react, preset-typescript
+#   tsconfig.json         consumed by ForkTsCheckerWebpackPlugin
+#   postcss.config.js     postcss-loader
+#   tailwind.config.js    referenced by postcss, and scans src/ for classes
+#
+# No ESLintPlugin is configured, so .eslintrc.js is deliberately not needed here.
 COPY src ./src
 COPY public ./public
 COPY webpack ./webpack
-COPY webpack.config.js tsconfig.json postcss.config.js tailwind.config.js ./
+COPY .babelrc webpack.config.js tsconfig.json postcss.config.js tailwind.config.js ./
 
 # Declared after the dependency install so that changing either one does not invalidate the cached
 # npm layer: which app in this monorepo to build, and which env file to bake in.
