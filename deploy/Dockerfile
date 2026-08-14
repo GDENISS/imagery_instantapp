@@ -48,6 +48,7 @@ FROM nginx:alpine
 ARG APP=sentinel2explorer
 
 COPY deploy/nginx/app.conf /etc/nginx/conf.d/default.conf
+COPY deploy/nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=build /app/dist/${APP} /usr/share/nginx/html
 
 # TLS is terminated by whatever sits in front of this container, so plain HTTP inside is correct.
