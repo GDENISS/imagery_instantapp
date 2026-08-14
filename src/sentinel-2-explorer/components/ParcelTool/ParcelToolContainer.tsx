@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import React, { useMemo, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import classNames from 'classnames';
 import Polygon from '@arcgis/core/geometry/Polygon';
 import * as geometryEngine from '@arcgis/core/geometry/geometryEngine';
@@ -55,6 +55,10 @@ import { extractParcelIndexReport } from '@shared/store/ParcelTool/thunks';
 import { Dropdown, DropdownData } from '@shared/components/Dropdown';
 import { AnalysisToolHeaderText } from '@shared/components/AnalysisToolHeader/AnalysisToolHeader';
 import { downloadBlob } from '@shared/utils/snippets/downloadBlob';
+import {
+    copyTextToClipboard,
+    isRunningInIframe,
+} from '@shared/utils/snippets/copyTextToClipboard';
 import {
     formatParcelIndexDataAsCsv,
     getParcelReportFileName,
@@ -123,6 +127,17 @@ export const ParcelToolContainer = () => {
     const error = useAppSelector(selectError4ParcelTool);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    /**
+     * A sandboxed iframe cannot start a download unless the embedding page sets `allow-downloads`,
+     * and nothing this app does can change that. When embedded, a clipboard fallback is offered
+     * instead, because clipboard writes are not subject to the download sandbox.
+     */
+    const isEmbedded = useMemo(() => isRunningInIframe(), []);
+
+    const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>(
+        'idle'
+    );
 
     const availableYears = useAvailableYears();
 
@@ -212,6 +227,17 @@ export const ParcelToolContainer = () => {
         });
 
         downloadBlob(blob, getParcelReportFileName(startYear, endYear));
+    };
+
+    const handleCopyCsv = async () => {
+        const csv = formatParcelIndexDataAsCsv(data, selectedIndices);
+
+        const succeeded = await copyTextToClipboard(csv);
+
+        setCopyStatus(succeeded ? 'copied' : 'failed');
+
+        // let the confirmation fade so the panel does not keep stale feedback on screen
+        window.setTimeout(() => setCopyStatus('idle'), 4000);
     };
 
     if (tool !== 'parcel') {
@@ -362,10 +388,45 @@ export const ParcelToolContainer = () => {
                 >
                     {t('donwload_as_csv')}
                 </calcite-button>
+
+                {/*
+                    Only offered when embedded. A sandboxed iframe blocks downloads unless the
+                    embedding page sets allow-downloads, which this app cannot influence, so the
+                    clipboard is the one route out that a sandbox does not close.
+                */}
+                {isEmbedded ? (
+                    <calcite-button
+                        scale="s"
+                        width="full"
+                        appearance="outline"
+                        kind="neutral"
+                        icon-start="copy-to-clipboard"
+                        disabled={
+                            !data.length || loading || !selectedIndices.length
+                                ? true
+                                : undefined
+                        }
+                        onClick={handleCopyCsv}
+                    >
+                        {t('copy_as_csv')}
+                    </calcite-button>
+                ) : null}
             </div>
 
+            {isEmbedded && data.length ? (
+                <p className="mt-2 text-xs opacity-70">
+                    {t('embedded_download_hint')}
+                </p>
+            ) : null}
+
             <div className="mt-2 text-xs text-center opacity-70">
-                {loading ? (
+                {copyStatus !== 'idle' ? (
+                    <span className="text-custom-light-blue">
+                        {copyStatus === 'copied'
+                            ? t('csv_copied')
+                            : t('csv_copy_failed')}
+                    </span>
+                ) : loading ? (
                     <span>
                         {t('sampling_scenes', {
                             processed: countOfProcessedScenes,
